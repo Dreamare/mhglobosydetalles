@@ -1,0 +1,29 @@
+body{
+    background-color:#cdd3d1c0;
+    
+  
+}
+ table.dataTable thead {
+
+    /* background: #5d6d7e; */
+    background: #52be80;
+    color: white;
+    letter-spacing: 1px;
+    font-size: 10pt;
+    
+}
+
+.caja{
+  border: 10px solid; 
+  padding: 20px;
+  box-shadow: 10px 10px 50px 10px #0a0a0a;
+  letter-spacing: 1px;
+  border-radius: 1px;
+  
+
+  
+  
+  
+  /* cursor: pointer */
+  /* font-family: 'Arial'; */
+}

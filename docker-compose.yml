@@ -1,0 +1,56 @@
+services:
+  db:
+    image: mariadb:10.6
+    container_name: pasarela_db
+    restart: unless-stopped
+    environment:
+      MARIADB_ALLOW_EMPTY_ROOT_PASSWORD: "yes"
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+    volumes:
+      - db_data:/var/lib/mysql
+      - db_sock:/var/run/mysqld
+      - ./MhAdmin/db/instalar_tienda.sql:/docker-entrypoint-initdb.d/01_instalar_tienda.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - pasarela_net
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pasarela_web
+    restart: unless-stopped
+    depends_on:
+      - db
+    volumes:
+      - .:/var/www/html
+      - db_sock:/var/run/mysqld
+    ports:
+      - "8000:80"
+    networks:
+      - pasarela_net
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: pasarela_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: ""
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    networks:
+      - pasarela_net
+
+volumes:
+  db_data:
+  db_sock:
+
+networks:
+  pasarela_net:
+    driver: bridge
