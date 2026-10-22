@@ -20,12 +20,17 @@ RUN { \
     echo 'error_reporting = E_ALL & ~E_NOTICE & ~E_WARNING'; \
 } > /usr/local/etc/php/conf.d/docker-php-custom.ini
 
-# Script de entrada para garantizar conectividad localhost/127.0.0.1 y socket hacia el contenedor de base de datos
+# Script de entrada para adaptar el puerto dinámico de Render y garantizar conectividad
 COPY <<'EOF' /usr/local/bin/docker-php-entrypoint-custom
 #!/bin/bash
 set -e
 
-# Si el socket no está montado directamente, o para asegurar que 127.0.0.1:3306 apunte a MariaDB/MySQL:
+# Adaptar puerto de Apache si Render o el entorno define la variable PORT
+if [ -n "$PORT" ]; then
+    sed -i "s/80/$PORT/g" /etc/apache2/ports.conf /etc/apache2/sites-available/*.conf
+fi
+
+# Conectividad local si se requiere puente
 if command -v socat >/dev/null 2>&1; then
     (while true; do socat TCP-LISTEN:3306,fork,reuseaddr TCP:db:3306 2>/dev/null || sleep 2; done) &
 fi
@@ -36,5 +41,8 @@ EOF
 RUN chmod +x /usr/local/bin/docker-php-entrypoint-custom
 
 WORKDIR /var/www/html
+
+# Copiar el código del proyecto dentro de la imagen
+COPY . /var/www/html
 
 ENTRYPOINT ["docker-php-entrypoint-custom"]
